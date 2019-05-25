@@ -3,6 +3,8 @@ import glob
 import numpy as np
 import pandas as pd
 from astropy.io import fits
+import warnings
+from astropy.utils.exceptions import AstropyWarning
 
 
 def convert_to_npy(file, path, out):
@@ -23,7 +25,7 @@ def convert_to_npy(file, path, out):
 
 
 def main():
-
+    warnings.simplefilter('ignore', category=AstropyWarning)
     input_path = sys.argv[1]
     if len(sys.argv) == 3:
         output_path = sys.argv[2]
@@ -34,7 +36,7 @@ def main():
     list_files = glob.glob(input_path + '*_g.fit.gz')
     data = []
 
-    for file in list_files[:5]:
+    for file in list_files:
         npy_file = convert_to_npy(file, input_path, output_path)
         parsed_file = npy_file[len(output_path):].split("_")
         data.append([parsed_file[2], parsed_file[0], npy_file + ".npy"])

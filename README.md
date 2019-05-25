@@ -4,10 +4,10 @@
 
 How to use it:
 
-Edit ''' run.sh''' with desired input path and output path.
+Edit `run.sh` with desired input path and output path.
 
 Then:
 
-'''
+```
 ./run.sh
-'''
+```
