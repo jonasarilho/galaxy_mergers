@@ -1,10 +1,8 @@
 import sys
 import numpy as np
 import pandas as pd
-from matplotlib import pyplot as plt
 from skimage.transform import resize
 from astropy.visualization import LogStretch
-from astropy.visualization.mpl_normalize import ImageNormalize
 
 
 def resize_img(tensor, cfg, size):
@@ -19,7 +17,8 @@ def resize_img(tensor, cfg, size):
     image = np.transpose(img, (1, 2, 0))
     image = (image / 65536).astype('float32')
     image = resize(image, (size, size), preserve_range=True)
-    print(image.shape)
+    stretch = LogStretch()
+    image = stretch(image)
     return image
 
 
@@ -42,12 +41,7 @@ def main():
         tensor = np.load(data["file"])
         img = resize_img(tensor, cfg, size)
         file = img_path + str(data["objid"])
-        norm = ImageNormalize(stretch=LogStretch())
         np.save(file, img)
-        plt.imshow(img, norm=norm)
-        plt.savefig("img" + str(index) + ".png")
-        if index == 5:
-            break
 
 
 if __name__ == '__main__':
