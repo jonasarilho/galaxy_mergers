@@ -29,7 +29,7 @@ def main():
             move(file, test_file)
             test_data.append([img_id, img_label, test_file])
         else:
-            training_file = test_path + img_id + ".npy"
+            training_file = training_path + img_id + ".npy"
             move(file, training_file)
             training_data.append([img_id, img_label, training_file])
 
