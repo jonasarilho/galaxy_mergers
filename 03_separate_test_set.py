@@ -38,8 +38,8 @@ def main():
     test_df = pd.DataFrame(test_data, columns=col)
     training_df_path = img_path + "training_dataframe.csv"
     test_df_path = img_path + "test_dataframe.csv"
-    training_df.to_csv(test_df_path, encoding='utf-8', index=False)
-    test_df.to_csv(training_df_path, encoding='utf-8', index=False)
+    training_df.to_csv(training_df_path, encoding='utf-8', index=False)
+    test_df.to_csv(test_df_path, encoding='utf-8', index=False)
 
 
 if __name__ == '__main__':
