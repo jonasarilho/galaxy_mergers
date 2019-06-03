@@ -19,3 +19,5 @@ else
     python 02_resize_images.py $IMG_PATH $BANDS_CFG $IMG_SIZE
     python 03_separate_test_set.py $IMG_PATH
 fi
+
+# python 01_VGG_CNN.py $IMG_PATH $IMG_SIZE

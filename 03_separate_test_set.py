@@ -1,6 +1,6 @@
 import os
 import sys
-from shutil import copyfile
+from shutil import move
 import pandas as pd
 
 
@@ -13,7 +13,7 @@ def main():
     if not os.path.exists(training_path):
         os.makedirs(training_path)
 
-    test_path = img_path + "/training/"
+    test_path = img_path + "/test/"
     if not os.path.exists(test_path):
         os.makedirs(test_path)
 
@@ -21,23 +21,25 @@ def main():
     for index, data in dataframe.iterrows():
         img_id = str(data["objid"])
         img_label = str(data["label"])
-        file = img_path + img_id
+        file = img_path + img_id + ".npy"
         test_data = []
         training_data = []
         if index % 10 == 0:
-            test_file = test_path + img_id
-            copyfile(file, test_file)
+            test_file = test_path + img_id + ".npy"
+            move(file, test_file)
             test_data.append([img_id, img_label, test_file])
         else:
-            training_file = test_path + img_id
-            copyfile(file, training_file)
+            training_file = test_path + img_id + ".npy"
+            move(file, training_file)
             training_data.append([img_id, img_label, training_file])
 
     col = ["objid", "label", "file"]
     training_df = pd.DataFrame(training_data, columns=col)
     test_df = pd.DataFrame(test_data, columns=col)
-    training_df.to_csv("training_dataframe.csv", encoding='utf-8', index=False)
-    test_df.to_csv("training_dataframe.csv", encoding='utf-8', index=False)
+    training_df_path = img_path + "training_dataframe.csv"
+    test_df_path = img_path + "test_dataframe.csv"
+    training_df.to_csv(test_df_path, encoding='utf-8', index=False)
+    test_df.to_csv(training_df_path, encoding='utf-8', index=False)
 
 
 if __name__ == '__main__':
