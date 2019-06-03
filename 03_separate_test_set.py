@@ -18,12 +18,12 @@ def main():
         os.makedirs(test_path)
 
     dataframe = pd.read_csv("dataframe.csv")
+    test_data = []
+    training_data = []
     for index, data in dataframe.iterrows():
         img_id = str(data["objid"])
         img_label = str(data["label"])
         file = img_path + img_id + ".npy"
-        test_data = []
-        training_data = []
         if index % 10 == 0:
             test_file = test_path + img_id + ".npy"
             move(file, test_file)

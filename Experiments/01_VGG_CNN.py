@@ -16,15 +16,30 @@ if len(sys.argv) > 2:
 else:
     size = 32
 
-X_train = []
-Y_train = []
+X_list = []
+Y_list = []
 training_df_path = img_path + "training_dataframe.csv"
 df = pd.read_csv(training_df_path)
 for index, data in df.iterrows():
     img = np.load(data["file"])
-    X_train.append(img)
-    Y_train.append(data["label"])
+    X_list.append(img)
+    if data["label"] == "merger":
+        Y_list.append(1)
+    else:
+        Y_list.append(0)
 
+X_train = np.array(X_list)
+Y_train = np.array(Y_list)
+print(X_train.shape)
+print(Y_train.shape)
+
+training_len = int(len(X_train) * 0.9)
+batch_size = 90
+epochs = 50
+steps = training_len // batch_size
+validation_samples = int(0.1 * len(X_train))
+validation_steps = validation_samples // batch_size
+print(validation_steps)
 input_shape = (size, size, 3)
 
 model = Sequential()
@@ -51,6 +66,14 @@ model.compile(loss='binary_crossentropy',
               optimizer='rmsprop',
               metrics=['accuracy'])
 
-model.fit(X_train, Y_train, validation_split=0.1)
+model.fit(
+    X_train,
+    Y_train,
+    steps_per_epoch=steps,
+    epochs=epochs,
+    verbose=1,
+    validation_split=0.1,
+    validation_steps=validation_steps
+    )
 
 model.save_weights('experiment1.h5')
