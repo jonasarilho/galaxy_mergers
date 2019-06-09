@@ -1,6 +1,7 @@
 # reference:
 # https://gist.github.com/fchollet/0830affa1f7f19fd47b06d4cf89ed44d
 # VGG-Style CNN
+import os
 import sys
 import pandas as pd
 import numpy as np
@@ -11,7 +12,7 @@ from keras.layers import Activation, Dropout, Flatten, Dense
 img_path = sys.argv[1]
 
 if len(sys.argv) > 2:
-    size = int(sys.argv[1])
+    size = int(sys.argv[2])
 
 else:
     size = 32
@@ -34,7 +35,7 @@ print(X_train.shape)
 print(Y_train.shape)
 
 training_len = int(len(X_train) * 0.9)
-batch_size = 90
+batch_size = 32
 epochs = 50
 steps = training_len // batch_size
 validation_samples = int(0.1 * len(X_train))
@@ -73,7 +74,13 @@ model.fit(
     epochs=epochs,
     verbose=1,
     validation_split=0.1,
-    validation_steps=validation_steps
+    validation_steps=validation_steps,
+    shuffle=True
     )
 
-model.save_weights('experiment1.h5')
+
+for i in range(100):
+    experiment = 'experiment' + str(i) + '.h5'
+    if not os.path.exists(experiment):
+        model.save_weights(experiment)
+        break
