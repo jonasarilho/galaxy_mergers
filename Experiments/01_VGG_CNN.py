@@ -8,6 +8,9 @@ import numpy as np
 from keras.models import Sequential
 from keras.layers import Conv2D, MaxPooling2D
 from keras.layers import Activation, Dropout, Flatten, Dense
+from keras.callbacks import History
+import matplotlib.pyplot as plt
+from sklearn.utils import class_weight
 
 img_path = sys.argv[1]
 
@@ -42,6 +45,11 @@ validation_samples = int(0.1 * len(X_train))
 validation_steps = validation_samples // batch_size
 print(validation_steps)
 input_shape = (size, size, 3)
+class_weight = class_weight.compute_class_weight(
+    'balanced',
+    np.unique(Y_train),
+    Y_train
+    )
 
 model = Sequential()
 model.add(Conv2D(32, (3, 3), input_shape=input_shape))
@@ -67,6 +75,7 @@ model.compile(loss='binary_crossentropy',
               optimizer='rmsprop',
               metrics=['accuracy'])
 
+history = History()
 model.fit(
     X_train,
     Y_train,
@@ -75,12 +84,34 @@ model.fit(
     verbose=1,
     validation_split=0.1,
     validation_steps=validation_steps,
-    shuffle=True
+    shuffle=True,
+    class_weight=class_weight,
+    callbacks=[history]
     )
 
 
-for i in range(100):
+exp_number = 0
+for i in range(10):
     experiment = 'experiment' + str(i) + '.h5'
     if not os.path.exists(experiment):
         model.save_weights(experiment)
+        exp_number = i
         break
+
+plt.plot(history.history['acc'])
+plt.plot(history.history['val_acc'])
+plt.title('model accuracy')
+plt.ylabel('accuracy')
+plt.xlabel('epoch')
+plt.legend(['train', 'test'], loc='upper left')
+filename = 'experiment' + str(exp_number) + '_accuracy.png'
+plt.savefig(filename, bbox_inches='tight')
+
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.title('model loss')
+plt.ylabel('loss')
+plt.xlabel('epoch')
+plt.legend(['train', 'test'], loc='upper left')
+filename = 'experiment' + str(exp_number) + '_loss.png'
+plt.savefig(filename, bbox_inches='tight')
