@@ -3,7 +3,7 @@ import sys
 import numpy as np
 import pandas as pd
 from skimage.transform import resize
-from astropy.visualization import LogStretch
+from astropy.visualization import ZScaleInterval
 
 
 def bands_list(cfg):
@@ -18,11 +18,11 @@ def bands_list(cfg):
 def resize_img(tensor, bands, size):
     img = tensor[bands, :, :]
     image = np.transpose(img, (1, 2, 0))
-    image = (image / 65536).astype('float32')
-    image = resize(image, (size, size), preserve_range=True)
-    stretch = LogStretch()
+    image = (image / 65536)
+    stretch = ZScaleInterval()
     image = stretch(image)
-    return image
+    image = resize(image, (size, size), preserve_range=True)
+    return image.astype('float32')
 
 
 def main():
