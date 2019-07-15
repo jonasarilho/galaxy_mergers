@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from skimage.transform import resize
 
+
 def resize_img(tensor, size):
     image = resize(tensor, (size, size), preserve_range=True)
     return image.astype('float32')

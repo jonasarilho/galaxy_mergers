@@ -22,17 +22,20 @@ def main():
     if not os.path.exists(output_path):
         os.makedirs(output_path)
 
-    files = glob(input_path + '/**/*.jpeg', recursive=True)
+    files = glob(input_path + '*.jpeg')
 
     data = []
 
     for f in files:
-        new_name = f.replace(input_path, '').replace('/', ' ').lstrip().replace(' ', '_').replace('.jpeg', '')
+        new_name = f.replace('\\', '/')
+        new_name = new_name.replace(input_path, '')
+        new_name = new_name.replace('/', ' ')
+        new_name = new_name.lstrip()
+        new_name = new_name.replace(' ', '_')
+        new_name = new_name.replace('.jpeg', '')
         label, split, objid = new_name.split('_')
         objid = objid.replace('.jpeg', '')
         new_path = os.path.join(output_path, new_name + '.npy')
-        
-        print(new_name, label, split, objid)
 
         data.append((objid, label, new_path))
 
