@@ -22,7 +22,7 @@ def main():
     if not os.path.exists(output_path):
         os.makedirs(output_path)
 
-    files = glob(input_path + '*.jpeg')
+    files = glob(input_path + '/**/*.jpeg', recursive=True)
 
     data = []
 
