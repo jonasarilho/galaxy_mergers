@@ -27,3 +27,7 @@ fi
 #python 01_load_dataset_jpeg.py "F:/merging/dataset/" "F:/merging/npy_dataset/"
 # python 02_resize_images_jpeg.py "F:/merging/jpeg64/" "64"
 # python 03_split_dataset_jpeg.py "F:/merging/jpeg64/" "3" "64"
+
+#python 01_load_dataset_jpeg.py "F:/merging/dataset/" "F:/merging/npy_dataset/"
+# python 02_resize_images_jpeg.py "F:/merging/jpeg96/" "96"
+#python 03_split_dataset_jpeg.py "F:/merging/jpeg96/" "3" "96"
