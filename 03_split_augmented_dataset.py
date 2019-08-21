@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
+from scipy import ndimage
 
 
 def main():
@@ -47,20 +48,32 @@ def main():
         ['train', 'valid', 'test'],
         [y_train, y_valid, y_test])
 
+    angles = np.linspace(20, 340, 17)
+
     for split_df, split_name, y_img in splitted_datasets:
-        X_img = np.zeros(
+        x_angle = np.zeros(
             (len(split_df), side, side, n_bands)
             ).astype('float32')
+        X_img = x_angle
+        for _ in angles:
+            X_img = np.concatenate((X_img, x_angle), axis=0)
 
+        Y_img = np.zeros((len(angles) + 1) * len(y_img))
         print(split_name, X_img.shape, y_img.shape)
 
         for i, objid in enumerate(split_df):
             print(i, objid, y_img[i])
-            X_img[i, :, :, :] = np.load(
-                os.path.join(img_path, str(objid) + ".npy"))
+            sz = (len(angles) + 1)
+            x = np.load(os.path.join(img_path, str(objid) + ".npy"))
+            X_img[i * sz, :, :, :] = x
+            Y_img[i * sz] = y_img[i]
+            for j, angle in enumerate(angles):
+                X_rotated = ndimage.rotate(x, angle, reshape=False)
+                X_img[i * sz + j + 1, :, :, :] = X_rotated
+                Y_img[i * sz + j + 1] = y_img[i]
 
         np.save(os.path.join(img_path, 'X_%s.npy' % split_name), X_img)
-        np.save(os.path.join(img_path, 'y_%s.npy' % split_name), y_img)
+        np.save(os.path.join(img_path, 'y_%s.npy' % split_name), Y_img)
 
 
 if __name__ == '__main__':
