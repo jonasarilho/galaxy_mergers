@@ -2,12 +2,12 @@ import os
 import sys
 from datetime import datetime
 import numpy as np
-from keras.applications.vgg16 import VGG16
+from keras.applications.densenet import DenseNet121
 from keras.initializers import Constant
 from keras.layers import Dense, GlobalAveragePooling2D, Dropout, LeakyReLU
-from keras.optimizers import SGD
 from keras.models import Model
 from keras.callbacks import EarlyStopping, ModelCheckpoint
+from keras.optimizers import SGD
 from sklearn.utils import class_weight
 import matplotlib.pyplot as plt
 
@@ -37,7 +37,7 @@ class_weight = class_weight.compute_class_weight(
     )
 
 checkpoint = ModelCheckpoint(
-    "weights.{epoch:02d}-{val_loss:.2f}.hdf5",
+    "weights_imagenet.{epoch:02d}-{val_loss:.2f}.hdf5",
     monitor='val_loss',
     verbose=1,
     period=1,
@@ -55,15 +55,17 @@ earlystopping = EarlyStopping(
     restore_best_weights=True
     )
 
-base_model = VGG16(
-    weights=None,
+base_model = DenseNet121(
+    weights="imagenet",
     include_top=False,
     input_shape=input_shape,
     pooling=max
     )
 
-x = base_model.output
+for layer in base_model.layers:
+    layer.trainable = False
 
+x = base_model.output
 x = GlobalAveragePooling2D()(x)
 
 x = Dense(
@@ -75,19 +77,59 @@ x = LeakyReLU()(x)
 x = Dropout(0.5)(x)
 
 predictions = Dense(1, activation='sigmoid')(x)
-
 model = Model(inputs=base_model.input, outputs=predictions)
-
-print(base_model.summary())
-
-opt = SGD(lr=0.01)
 
 model.compile(
     loss='binary_crossentropy',
-    optimizer=opt,
+    optimizer='adam',
     metrics=['accuracy']
     )
 
+raw_history = model.fit(
+    X_train,
+    y_train,
+    batch_size=32,
+    epochs=10,
+    verbose=1,
+    validation_data=(X_valid, y_valid),
+    shuffle=True,
+    class_weight=class_weight,
+    callbacks=[earlystopping]
+    )
+
+model.save(
+    '%s_%s_raw_densenet121_imagenet.h5' % (
+        experiment_timestamp,
+        img_path_clean
+        )
+    )
+plt.plot(raw_history.history['acc'])
+plt.plot(raw_history.history['val_acc'])
+plt.title('model accuracy')
+plt.ylabel('accuracy')
+plt.xlabel('epoch')
+plt.legend(['train', 'valid'], loc='upper left')
+plt.savefig(
+    '%s_%s_raw_learning_curve_acc.png' % (
+        experiment_timestamp,
+        img_path_clean
+        ),
+    bbox_inches='tight'
+    )
+plt.clf()
+
+for layer in model.layers[:413]:
+    layer.trainable = False
+for layer in model.layers[413:]:
+    layer.trainable = True
+
+fine_opt = SGD(lr=0.0001, momentum=0.9)
+
+model.compile(
+    optimizer=fine_opt,
+    loss='binary_crossentropy',
+    metrics=['accuracy']
+    )
 
 history = model.fit(
     X_train,
@@ -102,10 +144,8 @@ history = model.fit(
     )
 
 model.save(
-    '%s_%s_vgg16_fromscratch.h5' %
-    (experiment_timestamp, img_path_clean)
+    '%s_%s_ft_densenet121_imagenet.h5' % (experiment_timestamp, img_path_clean)
     )
-
 plt.plot(history.history['acc'])
 plt.plot(history.history['val_acc'])
 plt.title('model accuracy')
@@ -113,7 +153,9 @@ plt.ylabel('accuracy')
 plt.xlabel('epoch')
 plt.legend(['train', 'valid'], loc='upper left')
 plt.savefig(
-    '%s_%s_learning_curve_acc.png' %
-    (experiment_timestamp, img_path_clean),
+    '%s_%s_ft_learning_curve_acc.png' % (
+        experiment_timestamp,
+        img_path_clean
+        ),
     bbox_inches='tight'
     )

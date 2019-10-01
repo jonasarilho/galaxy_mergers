@@ -3,7 +3,8 @@ import sys
 from datetime import datetime
 import numpy as np
 from keras.applications.inception_v3 import InceptionV3
-from keras.layers import Dense, Flatten
+from keras.initializers import Constant
+from keras.layers import Dense, GlobalAveragePooling2D, Dropout, LeakyReLU
 from keras.optimizers import SGD
 from keras.models import Model
 from keras.callbacks import EarlyStopping, ModelCheckpoint
@@ -63,10 +64,15 @@ base_model = InceptionV3(
 
 x = base_model.output
 
-x = Flatten()(x)
+x = GlobalAveragePooling2D()(x)
 
-x = Dense(4096, activation='relu')(x)
-x = Dense(4096, activation='relu')(x)
+x = Dense(
+    2048,
+    kernel_initializer='glorot_uniform',
+    bias_initializer=Constant(value=0.01)
+    )(x)
+x = LeakyReLU()(x)
+x = Dropout(0.5)(x)
 
 predictions = Dense(1, activation='sigmoid')(x)
 
@@ -96,7 +102,7 @@ history = model.fit(
     )
 
 model.save(
-    '%s_%s_vgg16_fromscratch.h5' %
+    '%s_%s_inceptionv3_fromscratch.h5' %
     (experiment_timestamp, img_path_clean)
     )
 

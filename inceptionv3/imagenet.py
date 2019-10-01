@@ -2,7 +2,7 @@ import os
 import sys
 from datetime import datetime
 import numpy as np
-from keras.applications.vgg16 import VGG16
+from keras.applications.inception_v3 import InceptionV3
 from keras.layers import Dense, Flatten
 from keras.models import Model
 from keras.callbacks import EarlyStopping, ModelCheckpoint
@@ -54,7 +54,7 @@ earlystopping = EarlyStopping(
     restore_best_weights=True
     )
 
-base_model = VGG16(
+base_model = InceptionV3(
     weights="imagenet",
     include_top=False,
     input_shape=input_shape,
@@ -75,11 +75,9 @@ predictions = Dense(1, activation='sigmoid')(x)
 
 model = Model(inputs=base_model.input, outputs=predictions)
 
-opt = SGD(lr=0.01)
-
 model.compile(
     loss='binary_crossentropy',
-    optimizer=opt,
+    optimizer='adam',
     metrics=['accuracy']
     )
 

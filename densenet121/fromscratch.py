@@ -2,7 +2,7 @@ import os
 import sys
 from datetime import datetime
 import numpy as np
-from keras.applications.vgg16 import VGG16
+from keras.applications.densenet import DenseNet121
 from keras.initializers import Constant
 from keras.layers import Dense, GlobalAveragePooling2D, Dropout, LeakyReLU
 from keras.optimizers import SGD
@@ -55,7 +55,7 @@ earlystopping = EarlyStopping(
     restore_best_weights=True
     )
 
-base_model = VGG16(
+base_model = DenseNet121(
     weights=None,
     include_top=False,
     input_shape=input_shape,
@@ -102,7 +102,7 @@ history = model.fit(
     )
 
 model.save(
-    '%s_%s_vgg16_fromscratch.h5' %
+    '%s_%s_densenet121_fromscratch.h5' %
     (experiment_timestamp, img_path_clean)
     )
 
