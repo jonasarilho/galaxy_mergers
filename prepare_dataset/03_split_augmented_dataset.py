@@ -29,7 +29,7 @@ def main():
 
     print(lenc.classes_)
 
-    X_rest_objid, X_test_objid, y_rest, y_test = train_test_split(
+    X_test_objid, X_test_objid, y_rest, y_test = train_test_split(
         X_objid,
         y,
         test_size=1600,
@@ -37,7 +37,7 @@ def main():
         random_state=420)
 
     X_train_objid, X_valid_objid, y_train, y_valid = train_test_split(
-        X_rest_objid,
+        X_test_objid,
         y_rest,
         test_size=1600,
         stratify=y_rest,

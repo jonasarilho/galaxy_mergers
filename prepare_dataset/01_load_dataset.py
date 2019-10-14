@@ -7,6 +7,20 @@ import pandas as pd
 from skimage import io
 
 
+def info_from_filename(file, input_path, output_path):
+    new_name = file.replace('\\', '/')
+    new_name = new_name.replace(input_path, '')
+    new_name = new_name.replace('/', ' ')
+    new_name = new_name.lstrip()
+    new_name = new_name.replace(' ', '_')
+    new_name = new_name.replace('.jpeg', '')
+    label, split, objid = new_name.split('_')
+    objid = objid.replace('.jpeg', '')
+    new_path = os.path.join(output_path, new_name + '.npy')
+
+    return objid, label, new_path
+
+
 def main():
     input_path = sys.argv[1]
 
@@ -25,18 +39,8 @@ def main():
     files = glob(input_path + '/**/*.jpeg', recursive=True)
 
     data = []
-
     for f in files:
-        new_name = f.replace('\\', '/')
-        new_name = new_name.replace(input_path, '')
-        new_name = new_name.replace('/', ' ')
-        new_name = new_name.lstrip()
-        new_name = new_name.replace(' ', '_')
-        new_name = new_name.replace('.jpeg', '')
-        label, split, objid = new_name.split('_')
-        objid = objid.replace('.jpeg', '')
-        new_path = os.path.join(output_path, new_name + '.npy')
-
+        objid, label, new_path = info_from_filename(f, input_path, output_path)
         data.append((objid, label, new_path))
 
         img = io.imread(f)

@@ -4,10 +4,12 @@ from datetime import datetime
 import numpy as np
 from keras.applications.vgg16 import VGG16
 from keras.initializers import Constant
-from keras.layers import Dense, Flatten, Dropout, LeakyReLU
+from keras.layers import Dense,  GlobalAveragePooling2D, Dropout, LeakyReLU
 from keras.models import Model
 from keras.callbacks import EarlyStopping, ModelCheckpoint
+from keras.constraints import max_norm
 from keras.optimizers import SGD
+from keras.regularizers import l2
 from sklearn.utils import class_weight
 import matplotlib.pyplot as plt
 
@@ -66,12 +68,16 @@ for layer in base_model.layers:
     layer.trainable = False
 
 x = base_model.output
-x = Flatten()(x)
+
+x = GlobalAveragePooling2D()(x)
 
 x = Dense(
     2048,
     kernel_initializer='glorot_uniform',
-    bias_initializer=Constant(value=0.01)
+    bias_initializer=Constant(value=0.01),
+    kernel_constraint=max_norm(3),
+    bias_constraint=max_norm(3),
+    activity_regularizer=l2(0.1)
     )(x)
 x = LeakyReLU()(x)
 x = Dropout(0.5)(x)

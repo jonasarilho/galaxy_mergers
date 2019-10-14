@@ -8,6 +8,8 @@ from keras.layers import Dense, GlobalAveragePooling2D, Dropout, LeakyReLU
 from keras.models import Model
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras.optimizers import SGD
+# from keras.constraints import max_norm
+# from keras.regularizers import l2
 from sklearn.utils import class_weight
 import matplotlib.pyplot as plt
 
@@ -72,6 +74,9 @@ x = Dense(
     2048,
     kernel_initializer='glorot_uniform',
     bias_initializer=Constant(value=0.01)
+    # kernel_constraint=max_norm(3),
+    # bias_constraint=max_norm(3),
+    # activity_regularizer=l2(0.1)
     )(x)
 x = LeakyReLU()(x)
 x = Dropout(0.5)(x)
@@ -118,9 +123,10 @@ plt.savefig(
     )
 plt.clf()
 
-for layer in model.layers[:413]:
+# Train last 2 dense blocks
+for layer in model.layers[:141]:
     layer.trainable = False
-for layer in model.layers[413:]:
+for layer in model.layers[141:]:
     layer.trainable = True
 
 fine_opt = SGD(lr=0.0001, momentum=0.9)

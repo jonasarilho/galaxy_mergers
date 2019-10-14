@@ -3,10 +3,13 @@ import sys
 from datetime import datetime
 import numpy as np
 from keras.applications.inception_v3 import InceptionV3
-from keras.layers import Dense, Flatten
+from keras.initializers import Constant
+from keras.layers import Dense, GlobalAveragePooling2D, Dropout, LeakyReLU
+from keras.constraints import max_norm
+from keras.optimizers import SGD
+from keras.regularizers import l2
 from keras.models import Model
 from keras.callbacks import EarlyStopping, ModelCheckpoint
-from keras.optimizers import SGD
 from sklearn.utils import class_weight
 import matplotlib.pyplot as plt
 
@@ -66,14 +69,26 @@ for layer in base_model.layers:
 
 x = base_model.output
 
-x = Flatten()(x)
+x = GlobalAveragePooling2D()(x)
 
-x = Dense(4096, activation='relu')(x)
-x = Dense(4096, activation='relu')(x)
+x = Dense(
+    2048,
+    kernel_initializer='glorot_uniform',
+    bias_initializer=Constant(value=0.01),
+    kernel_constraint=max_norm(3),
+    bias_constraint=max_norm(3),
+    activity_regularizer=l2(0.1)
+    )(x)
+x = LeakyReLU()(x)
+x = Dropout(0.5)(x)
+
 
 predictions = Dense(1, activation='sigmoid')(x)
 
 model = Model(inputs=base_model.input, outputs=predictions)
+
+# for i, layer in enumerate(base_model.layers):
+#     print(i, layer.name)
 
 model.compile(
     loss='binary_crossentropy',
@@ -81,7 +96,7 @@ model.compile(
     metrics=['accuracy']
     )
 
-history = model.fit(
+raw_history = model.fit(
     X_train,
     y_train,
     batch_size=32,
@@ -90,14 +105,14 @@ history = model.fit(
     validation_data=(X_valid, y_valid),
     shuffle=True,
     class_weight=class_weight,
-    callbacks=[earlystopping]
+    callbacks=[earlystopping, checkpoint]
     )
 
 model.save(
     '%s_%s_inceptionv3_imagenet.h5' % (experiment_timestamp, img_path_clean)
     )
-plt.plot(history.history['acc'])
-plt.plot(history.history['val_acc'])
+plt.plot(raw_history.history['acc'])
+plt.plot(raw_history.history['val_acc'])
 plt.title('model accuracy')
 plt.ylabel('accuracy')
 plt.xlabel('epoch')
@@ -109,10 +124,11 @@ plt.savefig(
         ),
     bbox_inches='tight'
     )
+plt.clf()
 
-for layer in model.layers[:249]:
+for layer in model.layers[:165]:
     layer.trainable = False
-for layer in model.layers[249:]:
+for layer in model.layers[165:]:
     layer.trainable = True
 
 fine_opt = SGD(lr=0.0001, momentum=0.9)
