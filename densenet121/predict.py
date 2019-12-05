@@ -21,6 +21,6 @@ score = model.evaluate(X_test, y_test)
 print("accuracy = %.2f%%" % (score[1]*100))
 
 y_pred = model.predict(X_test)
-y_pred = np.argmax(y_pred, axis=1)
+y_pred1D = y_pred.round()
 
-print(classification_report(y_test, y_pred, labels=np.unique(y_pred)))
+print(classification_report(y_test, y_pred1D))

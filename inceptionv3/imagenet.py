@@ -100,7 +100,7 @@ raw_history = model.fit(
     X_train,
     y_train,
     batch_size=32,
-    epochs=200,
+    epochs=10,
     verbose=1,
     validation_data=(X_valid, y_valid),
     shuffle=True,
@@ -126,6 +126,8 @@ plt.savefig(
     )
 plt.clf()
 
+model = load_model("20191023_011315_dataset_inceptionv3_imagenet.h5")
+
 for layer in model.layers[:165]:
     layer.trainable = False
 for layer in model.layers[165:]:
@@ -143,7 +145,7 @@ history = model.fit(
     X_train,
     y_train,
     batch_size=32,
-    epochs=200,
+    epochs=100,
     verbose=1,
     validation_data=(X_valid, y_valid),
     shuffle=True,

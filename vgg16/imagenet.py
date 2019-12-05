@@ -100,7 +100,7 @@ raw_history = model.fit(
     validation_data=(X_valid, y_valid),
     shuffle=True,
     class_weight=class_weight,
-    callbacks=[earlystopping]
+    callbacks=[earlystopping, checkpoint]
     )
 
 model.save(
@@ -121,15 +121,14 @@ plt.savefig(
     )
 plt.clf()
 
-for layer in model.layers[:15]:
-    layer.trainable = False
-for layer in model.layers[15:]:
+for layer in model.layers:
     layer.trainable = True
 
 fine_opt = SGD(lr=0.0001, momentum=0.9)
 
 model.compile(
     optimizer=fine_opt,
+    # optimizer='adam',
     loss='binary_crossentropy',
     metrics=['accuracy']
     )
@@ -138,7 +137,7 @@ history = model.fit(
     X_train,
     y_train,
     batch_size=32,
-    epochs=200,
+    epochs=100,
     verbose=1,
     validation_data=(X_valid, y_valid),
     shuffle=True,

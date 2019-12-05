@@ -8,8 +8,8 @@ from keras.layers import Dense, GlobalAveragePooling2D, Dropout, LeakyReLU
 from keras.models import Model
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras.optimizers import SGD
-# from keras.constraints import max_norm
-# from keras.regularizers import l2
+from keras.constraints import max_norm
+from keras.regularizers import l2
 from sklearn.utils import class_weight
 import matplotlib.pyplot as plt
 
@@ -73,10 +73,10 @@ x = GlobalAveragePooling2D()(x)
 x = Dense(
     2048,
     kernel_initializer='glorot_uniform',
-    bias_initializer=Constant(value=0.01)
-    # kernel_constraint=max_norm(3),
-    # bias_constraint=max_norm(3),
-    # activity_regularizer=l2(0.1)
+    bias_initializer=Constant(value=0.01),
+    kernel_constraint=max_norm(3),
+    bias_constraint=max_norm(3),
+    activity_regularizer=l2(0.1)
     )(x)
 x = LeakyReLU()(x)
 x = Dropout(0.5)(x)
@@ -99,7 +99,7 @@ raw_history = model.fit(
     validation_data=(X_valid, y_valid),
     shuffle=True,
     class_weight=class_weight,
-    callbacks=[earlystopping]
+    callbacks=[earlystopping, checkpoint]
     )
 
 model.save(
@@ -124,9 +124,9 @@ plt.savefig(
 plt.clf()
 
 # Train last 2 dense blocks
-for layer in model.layers[:141]:
-    layer.trainable = False
-for layer in model.layers[141:]:
+# for layer in model.layers[:141]:
+#     layer.trainable = False
+for layer in model.layers:
     layer.trainable = True
 
 fine_opt = SGD(lr=0.0001, momentum=0.9)
@@ -141,7 +141,7 @@ history = model.fit(
     X_train,
     y_train,
     batch_size=32,
-    epochs=200,
+    epochs=100,
     verbose=1,
     validation_data=(X_valid, y_valid),
     shuffle=True,
